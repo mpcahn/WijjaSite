@@ -6,6 +6,8 @@
   <title>Wijja LLC | AI Solutions, Workflow Automation & Web Development</title>
   <meta name="description" content="Wijja LLC helps organizations embed AI, automate core operations, and build intelligent web applications using modern web tech and Google Workspace.">
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google reCAPTCHA v2 Script -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -37,7 +39,7 @@
       <a href="#" class="flex items-center gap-3 group">
         <!-- Brand Logo Image -->
         <img src="logo.png" alt="Wijja Logo" class="h-10 w-auto group-hover:scale-105 transition-transform object-contain" />
-        </a>
+      </a>
 
       <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
         <a href="#services" class="hover:text-brand-500 transition-colors">Services</a>
@@ -164,7 +166,13 @@
               Apply Estimate to Strategy Session Booking &rarr;
             </button>
           </div>
-        </div>        
+        </div>
+
+        <div class="mt-10 pt-8 border-t border-slate-800/80 text-center">
+          <button onclick="openStrategyModal()" class="px-8 py-3.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white font-bold text-sm transition-all hover:scale-105">
+            Book a Strategy Call to Discuss Your Scope &rarr;
+          </button>
+        </div>
       </div>
     </div>
   </section>
@@ -268,7 +276,7 @@
 
   <!-- Strategy Request Modal Overlay -->
   <div id="strategy-modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-8 relative shadow-2xl">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto">
       <button onclick="closeStrategyModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white">
         <i class="fa-solid fa-xmark text-xl"></i>
       </button>
@@ -310,6 +318,14 @@
         <div>
           <label class="block text-xs text-slate-300 font-medium mb-1">Project Details</label>
           <textarea id="form-details" rows="3" placeholder="Briefly describe your goals..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-white text-sm focus:outline-none focus:border-brand-500"></textarea>
+        </div>
+
+        <!-- Google reCAPTCHA v2 Widget -->
+        <div class="flex justify-center my-3">
+          <div class="g-recaptcha" data-sitekey="6LeW0PMtAAAAAICc2fYEfzHWmGQb-flce7dhmPhO" data-theme="dark"></div>
+        </div>
+        <div id="captcha-error" class="hidden text-center text-xs text-rose-400">
+          Please complete the reCAPTCHA verification to proceed.
         </div>
 
         <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold transition-all hover:opacity-90">
@@ -355,9 +371,20 @@
       document.getElementById('calc-result').classList.remove('hidden');
     }
 
-    // Google Form Handler
+    // Google Form Handler with reCAPTCHA Verification
     document.getElementById('strategy-form').addEventListener('submit', function(e) {
       e.preventDefault();
+
+      // Check reCAPTCHA verification
+      const recaptchaResponse = grecaptcha.getResponse();
+      const captchaError = document.getElementById('captcha-error');
+
+      if (!recaptchaResponse || recaptchaResponse.length === 0) {
+        captchaError.classList.remove('hidden');
+        return;
+      } else {
+        captchaError.classList.add('hidden');
+      }
 
       const name = document.getElementById('form-name').value;
       const email = document.getElementById('form-email').value;
@@ -383,6 +410,7 @@
       }).then(() => {
         document.getElementById('form-success').classList.remove('hidden');
         this.reset();
+        grecaptcha.reset();
         setTimeout(() => {
           closeStrategyModal();
           document.getElementById('form-success').classList.add('hidden');
